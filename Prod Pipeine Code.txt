@@ -1,0 +1,42 @@
+//Production Pipeline Code
+pipeline {
+    agent any 
+    
+    tools {
+        maven 'MyMaven'
+    }
+    stages {
+        stage("Code") {
+            steps {
+                git branch: 'main', url: 'https://github.com/Venkat2708/DevOps-Project.git'
+            }
+        }
+        stage("Build") {
+            steps {
+                dir('Jenkins-Project') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+        stage("Artifact") {
+            steps {
+                nexusArtifactUploader artifacts: [[artifactId: 'myweb', classifier: '', file: 'Jenkins-Project/target/myweb-8.6.9.war', type: '.war']], credentialsId: 'eb18ffdf-b11d-46c9-9313-142f16fcaaf0', groupId: 'in.javahome', nexusUrl: '54.165.9.219:8081', nexusVersion: 'nexus3', protocol: 'http', repository: 'My-Prod-Repo', version: '8.6.9'
+            }
+        }
+        stage("Deploy") {
+            input {
+                message 'Dear Sir/Madam\nKindly approve the pipeline to deploy application'
+            }
+            steps {
+                deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'f039786a-a02a-426c-b201-1d97271187ac', path: '', url: 'http://44.203.146.100:8080')], contextPath: 'Producton Application', war: 'Jenkins-Project/target/*.war'
+            }
+        }
+    }
+    post {
+        always {
+            mail to: 'venkatvenkychary@gmail.com',
+            subject: "Build Status: ${currentBuild.fullDisplayName}",
+            body: "The build ${env.BUILD_NUMBER} finished with status: ${currentBuild.currentResult}. View logs at: ${env.BUILD_URL}"
+        }
+    }
+}

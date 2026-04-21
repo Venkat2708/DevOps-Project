@@ -1,0 +1,27 @@
+//Development Pipeline Code
+pipeline {
+    agent any 
+    
+    tools {
+        maven 'MyMaven'
+    }
+    stages {
+        stage("Code") {
+            steps {
+                git branch: 'development', url: 'https://github.com/Venkat2708/DevOps-Project.git'
+            }
+        }
+        stage("Build") {
+            steps {
+                dir('Jenkins-Project') {
+                    sh 'mvn clean package'
+                }
+            }
+        }
+        stage("Deploy") {
+            steps {
+                deploy adapters: [tomcat9(alternativeDeploymentContext: '', credentialsId: 'f039786a-a02a-426c-b201-1d97271187ac', path: '', url: 'http://32.192.53.245:8080/')], contextPath: 'Development Application', war: 'Jenkins-Project/target/*.war'
+            }
+        }
+    }
+}
