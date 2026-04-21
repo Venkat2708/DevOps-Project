@@ -187,30 +187,30 @@
     }
     .error-msg { color: var(--danger); font-size: 12px; margin-top: 4px; display: none; }
     .error-msg.show { display: block; }
-    /* Cart Drawer */
-    .cart-drawer {
+    /* Cart & Favorites Drawers */
+    .drawer {
       position: fixed; right: 0; top: 0; width: 420px; height: 100%;
       background: #0c0f16; z-index: 401; transform: translateX(100%);
       transition: transform 0.3s ease; display: flex; flex-direction: column;
     }
-    .cart-drawer.open { transform: translateX(0); }
-    .cart-item {
-      display: flex; gap: 14px; margin-bottom: 16px; background: var(--bg-card);
-      border-radius: 16px; padding: 12px; align-items: center;
-    }
-    .cart-item img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
-    .cart-item-details { flex: 1; }
-    .quantity-control { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
-    .quantity-control button {
-      background: rgba(72,214,255,0.2); border: none; width: 28px; height: 28px;
-      border-radius: 8px; color: white; cursor: pointer;
-    }
+    .drawer.open { transform: translateX(0); }
     .drawer-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.6);
       backdrop-filter: blur(5px); z-index: 400; opacity: 0; visibility: hidden;
       transition: all 0.3s;
     }
     .drawer-overlay.open { opacity: 1; visibility: visible; }
+    .cart-item, .fav-item {
+      display: flex; gap: 14px; margin-bottom: 16px; background: var(--bg-card);
+      border-radius: 16px; padding: 12px; align-items: center;
+    }
+    .cart-item img, .fav-item img { width: 60px; height: 60px; border-radius: 12px; object-fit: cover; }
+    .item-details { flex: 1; }
+    .quantity-control { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+    .quantity-control button {
+      background: rgba(72,214,255,0.2); border: none; width: 28px; height: 28px;
+      border-radius: 8px; color: white; cursor: pointer;
+    }
     .toast {
       position: fixed; bottom: 30px; right: 30px; background: #1a202c;
       border-left: 4px solid var(--success); border-radius: 60px; padding: 12px 24px;
@@ -222,7 +222,7 @@
       .main-nav { display: none; }
       .mobile-toggle { display: inline-flex; align-items: center; justify-content: center; background: var(--bg-card); border: 1px solid var(--border-glow); width: 42px; height: 42px; border-radius: 60px; color: white; cursor: pointer; }
       .deal-card { grid-template-columns: 1fr; }
-      .cart-drawer { width: 100%; max-width: 380px; }
+      .drawer { width: 100%; max-width: 380px; }
     }
   </style>
 </head>
@@ -356,6 +356,7 @@
       <input type="password" id="loginPassword" class="form-input" placeholder="Password">
       <div class="error-msg" id="loginPasswordError">Password required</div>
       <button class="btn-auth" id="loginBtn">Sign In</button>
+      <p style="text-align:center; font-size:12px; color:#6c7a8e;">Demo: any email + password (min 4 chars)</p>
     </div>
     <div id="signupFormContainer" class="auth-form hidden">
       <input type="text" id="signupName" class="form-input" placeholder="Full name">
@@ -371,7 +372,7 @@
 
 <!-- Cart Drawer -->
 <div class="drawer-overlay" id="cartOverlay"></div>
-<div class="cart-drawer" id="cartDrawer">
+<div class="drawer" id="cartDrawer">
   <div style="padding: 24px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1);">
     <span style="font-weight: 700; font-size: 20px;">Shopping Cart</span>
     <button id="closeCartBtn" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;"><i class="fas fa-times"></i></button>
@@ -388,13 +389,15 @@
 
 <!-- Favorites Drawer -->
 <div class="drawer-overlay" id="favOverlay"></div>
-<div class="cart-drawer" id="favDrawer" style="z-index: 301;">
+<div class="drawer" id="favDrawer">
   <div style="padding: 24px; display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1);">
-    <span style="font-weight: 700; font-size: 20px;"><i class="fas fa-heart" style="color: var(--danger);"></i> Favorites</span>
+    <span style="font-weight: 700; font-size: 20px;"><i class="fas fa-heart" style="color: var(--danger);"></i> My Favorites</span>
     <button id="closeFavBtn" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;"><i class="fas fa-times"></i></button>
   </div>
   <div id="favItemsContainer" style="flex: 1; overflow: auto; padding: 20px;"></div>
-  <div style="padding: 20px;"><button id="clearFavBtn" style="width:100%; background: rgba(249,115,92,0.15); border: 1px solid var(--danger); padding: 12px; border-radius: 40px; color: var(--danger); cursor: pointer;">Clear All</button></div>
+  <div style="padding: 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+    <button id="clearFavBtn" style="width:100%; background: rgba(249,115,92,0.15); border: 1px solid var(--danger); padding: 12px; border-radius: 40px; color: var(--danger); cursor: pointer;">Clear All Favorites</button>
+  </div>
 </div>
 
 <div class="toast" id="toast"><i class="fas fa-check-circle" style="color: var(--success);"></i><span id="toastMsg">Added</span></div>
@@ -414,19 +417,31 @@
   const CATEGORIES = ['all', 'phones', 'laptops', 'gadgets', 'footwear', 'accessories'];
   const CAT_NAMES = { all:'All', phones:'Phones', laptops:'Laptops', gadgets:'Audio', footwear:'Footwear', accessories:'Wearables' };
 
+  // State
   let cart = JSON.parse(localStorage.getItem('cart') || '[]');
   let favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
   let currentUser = localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null;
   let activeCategory = 'all';
 
+  // Helper Functions
   function showToast(msg) { const t = document.getElementById('toast'); document.getElementById('toastMsg').innerText = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
+  
   function updateCartUI() { 
-    document.getElementById('cartCount').innerText = cart.reduce((sum, i) => sum + i.quantity, 0);
+    const count = cart.reduce((sum, i) => sum + i.quantity, 0);
+    document.getElementById('cartCount').innerText = count;
     localStorage.setItem('cart', JSON.stringify(cart));
     renderCartDrawer();
   }
-  function updateFavBadge() { let c = Object.keys(favorites).length; const badge = document.getElementById('favBadge'); badge.innerText = c; badge.style.display = c ? 'inline-flex' : 'none'; localStorage.setItem('favorites', JSON.stringify(favorites)); }
+  
+  function updateFavBadge() { 
+    const c = Object.keys(favorites).length; 
+    const badge = document.getElementById('favBadge'); 
+    badge.innerText = c; 
+    badge.style.display = c ? 'inline-flex' : 'none'; 
+    localStorage.setItem('favorites', JSON.stringify(favorites));
+  }
 
+  // Cart Functions
   function addToCart(id, quantity = 1) {
     const product = PRODUCTS.find(p => p.id === id);
     if (!product) return;
@@ -438,6 +453,7 @@
   }
 
   function removeFromCart(id) { cart = cart.filter(i => i.id !== id); updateCartUI(); showToast('Removed from cart'); }
+  
   function updateQuantity(id, delta) {
     const item = cart.find(i => i.id === id);
     if (item) { item.quantity += delta; if (item.quantity <= 0) removeFromCart(id); else updateCartUI(); }
@@ -451,14 +467,14 @@
       total += item.price * item.quantity;
       return `<div class="cart-item">
         <img src="${item.img}" alt="${item.title}">
-        <div class="cart-item-details">
+        <div class="item-details">
           <div style="font-weight:600;">${item.title}</div>
           <div class="price">$${item.price}</div>
           <div class="quantity-control">
-            <button onclick="updateQuantity(${item.id}, -1)">-</button>
+            <button onclick="window.updateQuantity(${item.id}, -1)">-</button>
             <span>${item.quantity}</span>
-            <button onclick="updateQuantity(${item.id}, 1)">+</button>
-            <button onclick="removeFromCart(${item.id})" style="background:rgba(249,115,92,0.2); margin-left:8px;"><i class="fas fa-trash"></i></button>
+            <button onclick="window.updateQuantity(${item.id}, 1)">+</button>
+            <button onclick="window.removeFromCart(${item.id})" style="background:rgba(249,115,92,0.2); margin-left:8px;"><i class="fas fa-trash"></i></button>
           </div>
         </div>
       </div>`;
@@ -466,22 +482,38 @@
     document.getElementById('cartTotal').innerText = `$${total.toLocaleString()}`;
   }
 
-  function toggleFavorite(id) { if (favorites[id]) delete favorites[id]; else favorites[id] = true; updateFavBadge(); renderProducts(); renderFavDrawer(); }
+  // Favorites Functions
+  function toggleFavorite(id) { 
+    if (favorites[id]) delete favorites[id]; 
+    else favorites[id] = true; 
+    updateFavBadge(); 
+    renderProducts(); 
+    renderFavDrawer(); 
+    showToast(favorites[id] ? '❤️ Added to favorites' : 'Removed from favorites');
+  }
+
   function renderFavDrawer() {
     const container = document.getElementById('favItemsContainer');
     const ids = Object.keys(favorites).map(Number);
-    if (!ids.length) { container.innerHTML = '<div style="text-align:center; padding:40px; color: var(--text-secondary);">No favorites yet<br>❤️ Tap heart on products</div>'; return; }
+    if (!ids.length) { container.innerHTML = '<div style="text-align:center; padding:40px; color: var(--text-secondary);">No favorites yet<br>❤️ Tap heart on products to save them here</div>'; return; }
     container.innerHTML = ids.map(id => {
       const p = PRODUCTS.find(x => x.id === id);
-      return `<div class="cart-item">
-        <img src="${p.img}" width="50">
-        <div class="cart-item-details"><div style="font-weight:600;">${p.title}</div><div class="price">$${p.price}</div></div>
-        <button onclick="addToCart(${p.id}, 1)" style="background:rgba(72,214,255,0.2); border:none; padding:8px 12px; border-radius:30px; cursor:pointer;">Add to Cart</button>
-        <button onclick="toggleFavorite(${p.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-times"></i></button>
+      if (!p) return '';
+      return `<div class="fav-item">
+        <img src="${p.img}" alt="${p.title}">
+        <div class="item-details">
+          <div style="font-weight:600;">${p.title}</div>
+          <div class="price">$${p.price}</div>
+          <div style="margin-top: 8px;">
+            <button onclick="window.addToCart(${p.id}, 1)" style="background:rgba(72,214,255,0.2); border:none; padding:6px 14px; border-radius:30px; cursor:pointer; margin-right:8px;"><i class="fas fa-cart-plus"></i> Add</button>
+            <button onclick="window.toggleFavorite(${p.id})" style="background:none; border:none; color:var(--danger); cursor:pointer;"><i class="fas fa-trash"></i> Remove</button>
+          </div>
+        </div>
       </div>`;
     }).join('');
   }
 
+  // Product Rendering
   function renderCategories() {
     const grid = document.getElementById('categoriesGrid');
     grid.innerHTML = CATEGORIES.map(cat => `<button class="cat-pill ${activeCategory === cat ? 'active' : ''}" data-cat="${cat}"><i class="fas ${cat === 'all' ? 'fa-th' : 'fa-tag'}"></i> ${CAT_NAMES[cat]}</button>`).join('');
@@ -495,7 +527,7 @@
     grid.innerHTML = filtered.map(p => `
       <div class="product-card">
         <div class="product-img-wrap">
-          <img src="${p.img}" alt="${p.title}">
+          <img src="${p.img}" alt="${p.title}" loading="lazy">
           <button class="wish-overlay ${favorites[p.id] ? 'active' : ''}" data-id="${p.id}"><i class="fas fa-heart"></i></button>
         </div>
         <div class="product-body">
@@ -509,7 +541,7 @@
     document.querySelectorAll('.wish-overlay').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); toggleFavorite(parseInt(btn.dataset.id)); }));
   }
 
-  // Drawer controls
+  // Drawer Controls
   function openCartDrawer() { document.getElementById('cartDrawer').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); renderCartDrawer(); }
   function closeCartDrawer() { document.getElementById('cartDrawer').classList.remove('open'); document.getElementById('cartOverlay').classList.remove('open'); }
   function openFavDrawer() { document.getElementById('favDrawer').classList.add('open'); document.getElementById('favOverlay').classList.add('open'); renderFavDrawer(); }
@@ -524,13 +556,14 @@
   document.getElementById('clearFavBtn').addEventListener('click', () => { favorites = {}; updateFavBadge(); renderProducts(); renderFavDrawer(); showToast('All favorites cleared'); });
   document.getElementById('checkoutBtn').addEventListener('click', () => { if(cart.length) { showToast('✨ Order placed! (Demo)'); cart = []; updateCartUI(); closeCartDrawer(); } else showToast('Cart is empty'); });
 
-  // Auth
+  // Auth Functions
   const authOverlay = document.getElementById('authOverlay');
   function openAuthModal() { authOverlay.classList.add('open'); }
   function closeAuthModal() { authOverlay.classList.remove('open'); }
   document.getElementById('authBtn').addEventListener('click', () => { if (currentUser) showToast(`Hi ${currentUser.name}`); else openAuthModal(); });
   document.getElementById('closeAuthModal').addEventListener('click', closeAuthModal);
   authOverlay.addEventListener('click', (e) => { if (e.target === authOverlay) closeAuthModal(); });
+  
   document.querySelectorAll('.auth-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
@@ -540,7 +573,9 @@
       document.getElementById('signupFormContainer').classList.toggle('hidden', isLogin);
     });
   });
+  
   function validateEmail(email) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email); }
+  
   document.getElementById('loginBtn').addEventListener('click', () => {
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
@@ -554,6 +589,7 @@
       closeAuthModal(); showToast(`Welcome back, ${currentUser.name}!`); updateAuthUI();
     } else showToast('Invalid credentials');
   });
+  
   document.getElementById('signupBtn').addEventListener('click', () => {
     const name = document.getElementById('signupName').value.trim();
     const email = document.getElementById('signupEmail').value.trim();
@@ -569,28 +605,44 @@
     currentUser = { name, email }; localStorage.setItem('currentUser', JSON.stringify(currentUser));
     closeAuthModal(); showToast(`Welcome ${name}!`); updateAuthUI();
   });
+  
   function updateAuthUI() { const btn = document.getElementById('authBtn'); if (currentUser) btn.innerHTML = '<i class="fas fa-user-check"></i>'; else btn.innerHTML = '<i class="far fa-user"></i>'; }
   updateAuthUI();
 
-  // Other events
+  // Other Event Listeners
   document.getElementById('searchBtn').addEventListener('click', () => {
     const query = document.getElementById('searchInput').value.toLowerCase();
     const filtered = PRODUCTS.filter(p => p.title.toLowerCase().includes(query));
     const grid = document.getElementById('productsGrid');
     if (!filtered.length) grid.innerHTML = '<div style="text-align:center; padding:60px;">No results</div>';
-    else grid.innerHTML = filtered.map(p => `<div class="product-card"><div class="product-img-wrap"><img src="${p.img}"><button class="wish-overlay ${favorites[p.id] ? 'active' : ''}" data-id="${p.id}"><i class="fas fa-heart"></i></button></div><div class="product-body"><div class="product-title">${p.title}</div><div class="price-row"><span class="price">$${p.price}</span></div><button class="add-btn" data-id="${p.id}"><i class="fas fa-cart-plus"></i> Add</button></div></div>`).join('');
-    document.querySelectorAll('.add-btn').forEach(btn => btn.addEventListener('click', () => addToCart(parseInt(btn.dataset.id), 1)));
-    document.querySelectorAll('.wish-overlay').forEach(btn => btn.addEventListener('click', () => toggleFavorite(parseInt(btn.dataset.id))));
+    else {
+      grid.innerHTML = filtered.map(p => `<div class="product-card"><div class="product-img-wrap"><img src="${p.img}"><button class="wish-overlay ${favorites[p.id] ? 'active' : ''}" data-id="${p.id}"><i class="fas fa-heart"></i></button></div><div class="product-body"><div class="product-title">${p.title}</div><div class="price-row"><span class="price">$${p.price}</span></div><button class="add-btn" data-id="${p.id}"><i class="fas fa-cart-plus"></i> Add</button></div></div>`).join('');
+      document.querySelectorAll('.add-btn').forEach(btn => btn.addEventListener('click', () => addToCart(parseInt(btn.dataset.id), 1)));
+      document.querySelectorAll('.wish-overlay').forEach(btn => btn.addEventListener('click', () => toggleFavorite(parseInt(btn.dataset.id))));
+    }
   });
+  
   document.getElementById('shopNow').addEventListener('click', () => document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' }));
   document.getElementById('exploreDeals').addEventListener('click', () => document.getElementById('deals').scrollIntoView({ behavior: 'smooth' }));
   document.getElementById('buyDeal').addEventListener('click', () => addToCart(2, 1));
-  document.getElementById('newsletterForm').addEventListener('submit', (e) => { e.preventDefault(); document.getElementById('newsletterMsg').innerHTML = '<span style="color: var(--accent-cyan);">✨ Subscribed!</span>'; setTimeout(() => document.getElementById('newsletterMsg').innerHTML = '', 3000); });
+  document.getElementById('newsletterForm').addEventListener('submit', (e) => { e.preventDefault(); document.getElementById('newsletterMsg').innerHTML = '<span style="color: var(--accent-cyan);">✨ Subscribed! Welcome gift incoming.</span>'; setTimeout(() => document.getElementById('newsletterMsg').innerHTML = '', 3000); });
+  
   function startTimer() { let target = Date.now() + (36 * 3600000); setInterval(() => { let diff = Math.max(0, target - Date.now()); document.getElementById('dealDays').innerText = Math.floor(diff / 86400000); document.getElementById('dealHours').innerText = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0'); document.getElementById('dealMinutes').innerText = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0'); document.getElementById('dealSeconds').innerText = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0'); }, 1000); }
   startTimer();
-  renderCategories(); renderProducts(); updateCartUI(); updateFavBadge();
+  
+  // Initialize
+  renderCategories(); 
+  renderProducts(); 
+  updateCartUI(); 
+  updateFavBadge();
+  
   document.getElementById('mobileToggle').addEventListener('click', () => { let m = document.getElementById('mobileMenu'); m.style.display = m.style.display === 'block' ? 'none' : 'block'; });
-  window.updateQuantity = updateQuantity; window.removeFromCart = removeFromCart; window.addToCart = addToCart; window.toggleFavorite = toggleFavorite;
+  
+  // Expose functions globally for inline onclick handlers
+  window.addToCart = addToCart;
+  window.removeFromCart = removeFromCart;
+  window.updateQuantity = updateQuantity;
+  window.toggleFavorite = toggleFavorite;
 </script>
 </body>
 </html>
