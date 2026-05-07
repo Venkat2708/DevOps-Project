@@ -55,9 +55,3 @@ docker stop aws-cost-estimator
 docker rm aws-cost-estimator
 ```
 
-## Resume Line
-Developed an AWS infrastructure cost estimation tool using Python Flask
-covering 9 AWS services · containerized and deployed using Docker
-
-## LinkedIn Post Tags
-#DevOps #Python #Flask #Docker #AWS #CloudEngineering #100DaysOfDevOps
