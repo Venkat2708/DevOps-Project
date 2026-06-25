@@ -117,6 +117,21 @@ services:
       - appointment-service
       - billing-service
       - dashboard-service
+      
+  auth-service:
+    build: ./auth-service
+
+    api-gateway:
+      build: ./api-gateway
+
+    ports:
+    - "80:80"
+   depends_on:
+    - patient-service
+    - doctor-service
+    - appointment-service
+    - billing-service
+    - dashboard-service
 
 volumes:
   postgres_data:
