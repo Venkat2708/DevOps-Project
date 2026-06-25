@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital Management System</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="sidebar">
+
+    <div class="logo">
+        🏥 HMS
+    </div>
+
+    <ul>
+        <li onclick="showSection('dashboard')">Dashboard</li>
+        <li onclick="showSection('patients')">Patients</li>
+        <li onclick="showSection('doctors')">Doctors</li>
+        <li onclick="showSection('appointments')">Appointments</li>
+        <li onclick="showSection('billing')">Billing</li>
+    </ul>
+
+</div>
+
+<div class="main">
+
+    <div class="topbar">
+        <h1>Hospital Management System</h1>
+    </div>
+
+    <!-- Dashboard -->
+
+    <section id="dashboard" class="page">
+
+        <div class="cards">
+
+            <div class="card">
+                <h3>Total Patients</h3>
+                <h1 id="patientCount">0</h1>
+            </div>
+
+            <div class="card">
+                <h3>Total Doctors</h3>
+                <h1 id="doctorCount">0</h1>
+            </div>
+
+            <div class="card">
+                <h3>Appointments</h3>
+                <h1 id="appointmentCount">0</h1>
+            </div>
+
+            <div class="card">
+                <h3>Total Revenue</h3>
+                <h1 id="revenueCount">₹0</h1>
+            </div>
+
+        </div>
+
+    </section>
+
+    <!-- Patients -->
+
+    <section id="patients" class="page hidden">
+
+        <h2>Patient Registration</h2>
+
+        <form id="patientForm">
+
+            <input type="text" id="pname" placeholder="Name" required>
+
+            <input type="number" id="page" placeholder="Age" required>
+
+            <select id="pgender">
+                <option>Male</option>
+                <option>Female</option>
+            </select>
+
+            <input type="text" id="pphone" placeholder="Phone">
+
+            <input type="text" id="paddress" placeholder="Address">
+
+            <button type="submit">Save Patient</button>
+
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                </tr>
+            </thead>
+
+            <tbody id="patientTable"></tbody>
+        </table>
+
+    </section>
+
+    <!-- Doctors -->
+
+    <section id="doctors" class="page hidden">
+
+        <h2>Doctor Registration</h2>
+
+        <form id="doctorForm">
+
+            <input type="text"
+                   id="dname"
+                   placeholder="Doctor Name">
+
+            <input type="text"
+                   id="dspecialization"
+                   placeholder="Specialization">
+
+            <input type="number"
+                   id="dexperience"
+                   placeholder="Experience">
+
+            <input type="text"
+                   id="dphone"
+                   placeholder="Phone">
+
+            <button type="submit">
+                Save Doctor
+            </button>
+
+        </form>
+
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Specialization</th>
+            </tr>
+            </thead>
+
+            <tbody id="doctorTable"></tbody>
+        </table>
+
+    </section>
+
+    <!-- Appointments -->
+
+    <section id="appointments" class="page hidden">
+
+        <h2>Book Appointment</h2>
+
+        <form id="appointmentForm">
+
+            <input type="number"
+                   id="apatient"
+                   placeholder="Patient ID">
+
+            <input type="number"
+                   id="adoctor"
+                   placeholder="Doctor ID">
+
+            <input type="date"
+                   id="adate">
+
+            <button type="submit">
+                Book Appointment
+            </button>
+
+        </form>
+
+        <table>
+
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Patient</th>
+                <th>Doctor</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+
+            <tbody id="appointmentTable"></tbody>
+
+        </table>
+
+    </section>
+
+    <!-- Billing -->
+
+    <section id="billing" class="page hidden">
+
+        <h2>Generate Bill</h2>
+
+        <form id="billForm">
+
+            <input type="number"
+                   id="bpatient"
+                   placeholder="Patient ID">
+
+            <input type="number"
+                   id="bamount"
+                   placeholder="Amount">
+
+            <button type="submit">
+                Generate Bill
+            </button>
+
+        </form>
+
+        <table>
+
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Patient</th>
+                <th>Amount</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+
+            <tbody id="billTable"></tbody>
+
+        </table>
+
+    </section>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
+</body>
+</html>
