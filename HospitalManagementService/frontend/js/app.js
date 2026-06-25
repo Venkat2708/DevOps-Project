@@ -1,18 +1,8 @@
-const DASHBOARD =
-"http://localhost:5005";
-
-const PATIENT =
-"http://localhost:5001";
-
-const DOCTOR =
-"http://localhost:5002";
-
-const APPOINTMENT =
-"http://localhost:5003";
-
-const BILLING =
-"http://localhost:5004";
-
+const DASHBOARD = "/dashboard";
+const PATIENT = "/patients";
+const DOCTOR = "/doctors";
+const APPOINTMENT = "/appointments";
+const BILLING = "/billing";
 
 function showPage(page){
 
