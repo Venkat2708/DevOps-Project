@@ -1,8 +1,8 @@
 const DASHBOARD = "/dashboard";
-const PATIENT = "/patients";
-const DOCTOR = "/doctors";
-const APPOINTMENT = "/appointments";
-const BILLING = "/billing";
+const PATIENT = "http://patient-service:5001";
+const DOCTOR = "http://doctor-service:5002";
+const APPOINTMENT = "http://appointment-service:5003";
+const BILLING = "http://billing-service:5004";
 
 function showPage(page){
 
