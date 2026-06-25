@@ -1,0 +1,122 @@
+version: "3.9"
+
+services:
+
+  postgres:
+
+    image: postgres:15
+
+    container_name: postgres
+
+    restart: always
+
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin123
+      POSTGRES_DB: hospitaldb
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  redis:
+
+    image: redis:7
+
+    container_name: redis
+
+    restart: always
+
+    ports:
+      - "6379:6379"
+
+  patient-service:
+
+    build:
+      context: ./patient-service
+
+    ports:
+      - "5001:5001"
+
+    depends_on:
+      - postgres
+
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
+
+  doctor-service:
+
+    build:
+      context: ./doctor-service
+
+    ports:
+      - "5002:5002"
+
+    depends_on:
+      - postgres
+
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
+
+  appointment-service:
+
+    build:
+      context: ./appointment-service
+
+    ports:
+      - "5003:5003"
+
+    depends_on:
+      - postgres
+
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
+
+  billing-service:
+
+    build:
+      context: ./billing-service
+
+    ports:
+      - "5004:5004"
+
+    depends_on:
+      - postgres
+
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
+
+  dashboard-service:
+
+    build:
+      context: ./dashboard-service
+
+    ports:
+      - "5005:5005"
+
+    depends_on:
+      - postgres
+
+    environment:
+      DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
+
+  frontend:
+
+    build:
+      context: ./frontend
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      - patient-service
+      - doctor-service
+      - appointment-service
+      - billing-service
+      - dashboard-service
+
+volumes:
+  postgres_data:
