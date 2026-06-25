@@ -4,16 +4,11 @@ services:
 
   postgres:
     image: postgres:15
-    container_name: postgres
-    restart: always
 
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin123
       POSTGRES_DB: hospitaldb
-
-    ports:
-      - "5432:5432"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -22,92 +17,56 @@ services:
     networks:
       - hospital-network
 
+    deploy:
+      replicas: 1
+
   redis:
     image: redis:7
-    container_name: redis
-    restart: always
-
-    ports:
-      - "6379:6379"
 
     networks:
       - hospital-network
 
-  auth-service:
-    build:
-      context: ./auth-service
-
-    ports:
-      - "5000:5000"
-
-    depends_on:
-      - postgres
-      - redis
-
-    environment:
-      DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
-      REDIS_HOST: redis
-
-    networks:
-      - hospital-network
+    deploy:
+      replicas: 1
 
   patient-service:
-    build:
-      context: ./patient-service
-
-    ports:
-      - "5001:5001"
-
-    depends_on:
-      - postgres
+    image: venkat2708/hms:patient-service
 
     environment:
       DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
 
     networks:
       - hospital-network
+
+    deploy:
+      replicas: 2
 
   doctor-service:
-    build:
-      context: ./doctor-service
-
-    ports:
-      - "5002:5002"
-
-    depends_on:
-      - postgres
+    image: venkat2708/hms:doctor-service
 
     environment:
       DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
 
     networks:
       - hospital-network
+
+    deploy:
+      replicas: 2
 
   appointment-service:
-    build:
-      context: ./appointment-service
-
-    ports:
-      - "5003:5003"
-
-    depends_on:
-      - postgres
+    image: venkat2708/hms:appointment-service
 
     environment:
       DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
 
     networks:
       - hospital-network
+
+    deploy:
+      replicas: 2
 
   billing-service:
-    build:
-      context: ./billing-service
-
-    ports:
-      - "5004:5004"
-
-    depends_on:
-      - postgres
+    image: venkat2708/hms:billing-service
 
     environment:
       DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
@@ -115,52 +74,32 @@ services:
     networks:
       - hospital-network
 
-  dashboard-service:
-    build:
-      context: ./dashboard-service
-
-    ports:
-      - "5005:5005"
-
-    depends_on:
-      - postgres
-
-    environment:
-      DATABASE_URL: postgresql://admin:admin123@postgres:5432/hospitaldb
-
-    networks:
-      - hospital-network
+    deploy:
+      replicas: 2
 
   api-gateway:
-    build:
-      context: ./api-gateway
+    image: venkat2708/hms:api-gateway
 
     ports:
       - "80:80"
 
-    depends_on:
-      - auth-service
-      - patient-service
-      - doctor-service
-      - appointment-service
-      - billing-service
-      - dashboard-service
-
     networks:
       - hospital-network
 
+    deploy:
+      replicas: 2
+
   frontend:
-    build:
-      context: ./frontend
+    image: venkat2708/hms:frontend
 
     ports:
       - "8080:80"
 
-    depends_on:
-      - api-gateway
-
     networks:
       - hospital-network
+
+    deploy:
+      replicas: 2
 
 volumes:
   postgres_data:
