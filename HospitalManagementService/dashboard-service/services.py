@@ -86,3 +86,30 @@ def get_dashboard_stats():
         "total_revenue":
             total_revenue
     }
+    from cache import (
+    get_cache,
+    set_cache
+)
+
+cached = get_cache(
+    "dashboard_stats"
+)
+
+if cached:
+    return cached
+
+# Existing logic
+
+stats = {
+    "total_patients": len(patients),
+    "total_doctors": len(doctors),
+    "total_appointments": len(appointments),
+    "total_revenue": total_revenue
+}
+
+set_cache(
+    "dashboard_stats",
+    stats
+)
+
+return stats
